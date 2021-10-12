@@ -25,10 +25,12 @@ class MovieDetailViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         movieTitleLabel.text = movieTitle
-        dateLabel.text = "Release date: \(releaseDate!)"
+        dateLabel.text = "Release Date: \(releaseDate!)"
         infoTextBox.text = overview
-        handleImage(string: image!)
-        print(image!)
+        
+        if let imageString = image {
+            handleImage(string: imageString)
+        }
     }
     
     func handleImage(string: String) {

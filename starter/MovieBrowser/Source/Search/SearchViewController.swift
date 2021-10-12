@@ -13,7 +13,7 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var searchBar: UITextField!
     @IBOutlet weak var tableView: UITableView!
     
-    var textResult = String()
+    var textResult =  String()
     var jsonResult: [ArrayType]?
     
     struct Movies: Codable {
@@ -31,6 +31,7 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         tableView.dataSource = self
         tableView.delegate = self
+        hideKeyboardWhenTappedAround()
         
     }
     
@@ -40,8 +41,8 @@ class SearchViewController: UIViewController {
     
     func searchForMovieWith(text: String) {
         textResult = handleSpacesIn(text: text)
-        let url = URL(string: "https://api.themoviedb.org/3/search/movie?api_key=5885c445eab51c7004916b9c0313e2d3&language=en-US&query=\(textResult)&page=1&include_adult=true")!
-        if let data = try? Data(contentsOf: url) {
+        let url = URL(string: "https://api.themoviedb.org/3/search/movie?api_key=5885c445eab51c7004916b9c0313e2d3&language=en-US&query=\(textResult)&page=1&include_adult=true")
+        if let data = try? Data(contentsOf: url!) {
             parse(json: data)
         }
     }
@@ -85,18 +86,27 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let detailVC = storyboard?.instantiateViewController(withIdentifier: "movieDetailVC") as? MovieDetailViewController else { return }
-        let movieInfo = jsonResult![indexPath.row]
-        print(movieInfo.original_title!)
-        detailVC.movieTitle = movieInfo.original_title!
-        detailVC.releaseDate = movieInfo.release_date!
-        detailVC.image = movieInfo.backdrop_path!
-        detailVC.overview = movieInfo.overview!
+        let movieInfo = jsonResult?[indexPath.row]
+        
+        detailVC.movieTitle = movieInfo?.original_title!
+        detailVC.releaseDate = movieInfo?.release_date!
+        if let imageString = movieInfo?.backdrop_path {
+            detailVC.image = imageString
+        }
+        detailVC.overview = movieInfo?.overview!
         present(detailVC, animated: true, completion: nil)
-        
-        
+    }
+}
+
+extension UIViewController {
+    func hideKeyboardWhenTappedAround() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(UIViewController.dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
     }
     
-    
-    
-    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
 }
+
